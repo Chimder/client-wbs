@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { getChannels, getPodchannel } from '@/shared/api/generated'
 import { useMutation, useQuery } from '@tanstack/react-query'
 
-const App: React.FC = () => {
+const App = () => {
   const [socket, setSocket] = useState<WebSocket | null>(null)
   const [isConnected, setIsConnected] = useState(false)
   const [messages, setMessages] = useState<string[]>([])
@@ -39,11 +39,12 @@ const App: React.FC = () => {
     newSocket.onmessage = event => {
       const message = JSON.parse(event.data)
       let displayMessage = ''
+      console.log('EVENT', message)
 
       if (message.event === 'user_list') {
         displayMessage = `User connected: ${message.data.connected_users}`
       } else {
-        displayMessage = `User ${message.user_id}: ${message.data}`
+        displayMessage = `User: ${message.data}`
       }
 
       setMessages(prevMessages => [...prevMessages, displayMessage])
@@ -83,8 +84,8 @@ const App: React.FC = () => {
   const sendMessage = () => {
     if (socket && inputValue.trim() !== '' && selectedPodchannel) {
       const message = JSON.stringify({
-        content: inputValue,
-        podchannelId: selectedPodchannel,
+        event: 'mess',
+        data: inputValue,
       })
       socket.send(message)
       setInputValue('')
