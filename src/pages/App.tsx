@@ -1,11 +1,18 @@
 import React, { useEffect, useState } from 'react'
-import { getChannels, getPodchannel } from '@/shared/api/generated'
+import {
+  createRandomUser,
+  getChannels,
+  getPodchannel,
+} from '@/shared/api/generated'
 import { useMutation, useQuery } from '@tanstack/react-query'
 
-const App = () => {
+import { Button } from '@/components/ui/button'
+
+const App: React.FC = () => {
   const [socket, setSocket] = useState<WebSocket | null>(null)
   const [isConnected, setIsConnected] = useState(false)
   const [messages, setMessages] = useState<string[]>([])
+  const [users, setUsers] = useState<number>()
   const [inputValue, setInputValue] = useState<string>('')
 
   const [selectedChannel, setSelectedChannel] = useState<number | null>(null)
@@ -41,8 +48,8 @@ const App = () => {
       let displayMessage = ''
       console.log('EVENT', message)
 
-      if (message.event === 'user_list') {
-        displayMessage = `User connected: ${message.data.connected_users}`
+      if (message.event === 'users') {
+        // setUsers(message.data.users)
       } else {
         displayMessage = `User: ${message.data}`
       }
@@ -74,18 +81,31 @@ const App = () => {
 
     setSelectedChannel(channelId)
     setSelectedPodchannel(null)
+    setMessages([])
     getpodchannels({ id: channelId })
   }
 
   const handlePodchannelClick = (podchannelId: number) => {
     setSelectedPodchannel(podchannelId)
+    setMessages([])
+    if (socket) {
+      socket.send(
+        JSON.stringify({
+          event: 'join_podchannel',
+          channel_id: selectedChannel,
+          podchannel_id: podchannelId,
+        }),
+      )
+    }
   }
 
   const sendMessage = () => {
     if (socket && inputValue.trim() !== '' && selectedPodchannel) {
       const message = JSON.stringify({
-        event: 'mess',
+        event: 'message',
         data: inputValue,
+        channel_id: selectedChannel,
+        podchannel_id: selectedPodchannel,
       })
       socket.send(message)
       setInputValue('')
@@ -95,6 +115,7 @@ const App = () => {
   return (
     <div className="container mx-auto p-4">
       <h1 className="mb-4 text-2xl font-bold">WebSocket Communication</h1>
+      <Button>{users}</Button>
       {channelsLoading ? (
         <p>Loading channels...</p>
       ) : (

@@ -38,8 +38,23 @@ definitions:
       name:
         description: name
         type: string
-      type:
-        description: type
+      types:
+        description: types
+        type: string
+      updated_at:
+        description: updated_at
+        type: string
+    type: object
+  models.User:
+    properties:
+      created_at:
+        description: created_at
+        type: string
+      id:
+        description: id
+        type: integer
+      name:
+        description: name
         type: string
       updated_at:
         description: updated_at
@@ -126,7 +141,7 @@ paths:
         type: string
       - description: type of the podchannel
         in: query
-        name: type
+        name: types
         required: true
         type: string
       - description: channel of the podchannel
@@ -168,4 +183,25 @@ paths:
       summary: Get podchannel
       tags:
       - PodChannel
+  /user/create:
+    post:
+      consumes:
+      - application/json
+      description: Create random Channel
+      operationId: create-random-user
+      parameters:
+      - description: Name of User
+        in: query
+        name: name
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.User'
+      summary: Create random User
+      tags:
+      - User
 swagger: "2.0"

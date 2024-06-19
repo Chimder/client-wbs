@@ -6,6 +6,13 @@
  * OpenAPI spec version: 1.0
  */
 import { customInstance } from './axios.instance';
+export type CreateRandomUserParams = {
+/**
+ * Name of User
+ */
+name?: string;
+};
+
 export type GetPodchannelParams = {
 /**
  * ID of the podchannel
@@ -21,7 +28,7 @@ name: string;
 /**
  * type of the podchannel
  */
-type: string;
+types: string;
 /**
  * channel of the podchannel
  */
@@ -42,6 +49,17 @@ export type GetChannelParams = {
 id: string;
 };
 
+export interface ModelsUser {
+  /** created_at */
+  created_at?: string;
+  /** id */
+  id?: number;
+  /** name */
+  name?: string;
+  /** updated_at */
+  updated_at?: string;
+}
+
 export interface ModelsPodchannel {
   /** channel_id */
   channel_id?: number;
@@ -51,8 +69,8 @@ export interface ModelsPodchannel {
   id?: number;
   /** name */
   name?: string;
-  /** type */
-  type?: string;
+  /** types */
+  types?: string;
   /** updated_at */
   updated_at?: string;
 }
@@ -148,8 +166,23 @@ export const getPodchannel = (
       options);
     }
   
+/**
+ * Create random Channel
+ * @summary Create random User
+ */
+export const createRandomUser = (
+    params?: CreateRandomUserParams,
+ options?: SecondParameter<typeof customInstance>,) => {
+      return customInstance<ModelsUser>(
+      {url: `/user/create`, method: 'POST',
+        params
+    },
+      options);
+    }
+  
 export type GetChannelResult = NonNullable<Awaited<ReturnType<typeof getChannel>>>
 export type CreateChannelResult = NonNullable<Awaited<ReturnType<typeof createChannel>>>
 export type GetChannelsResult = NonNullable<Awaited<ReturnType<typeof getChannels>>>
 export type CreatePodchannelResult = NonNullable<Awaited<ReturnType<typeof createPodchannel>>>
 export type GetPodchannelResult = NonNullable<Awaited<ReturnType<typeof getPodchannel>>>
+export type CreateRandomUserResult = NonNullable<Awaited<ReturnType<typeof createRandomUser>>>
