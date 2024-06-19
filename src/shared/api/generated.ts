@@ -6,18 +6,26 @@
  * OpenAPI spec version: 1.0
  */
 import { customInstance } from './axios.instance';
-export type CreateRandomUserParams = {
-/**
- * Name of User
- */
-name?: string;
-};
-
 export type GetPodchannelParams = {
 /**
  * ID of the podchannel
  */
 channelId: number;
+};
+
+export type GetPodchannelMessageParams = {
+/**
+ * podchannel id
+ */
+podchannel_id: number;
+/**
+ * limit
+ */
+limit: number;
+/**
+ * page
+ */
+page: number;
 };
 
 export type CreatePodchannelParams = {
@@ -49,17 +57,6 @@ export type GetChannelParams = {
 id: string;
 };
 
-export interface ModelsUser {
-  /** created_at */
-  created_at?: string;
-  /** id */
-  id?: number;
-  /** name */
-  name?: string;
-  /** updated_at */
-  updated_at?: string;
-}
-
 export interface ModelsPodchannel {
   /** channel_id */
   channel_id?: number;
@@ -71,6 +68,21 @@ export interface ModelsPodchannel {
   name?: string;
   /** types */
   types?: string;
+  /** updated_at */
+  updated_at?: string;
+}
+
+export interface ModelsMessage {
+  /** author_id */
+  author_id?: string;
+  /** content */
+  content?: string;
+  /** created_at */
+  created_at?: string;
+  /** id */
+  id?: number;
+  /** podchannel_id */
+  podchannel_id?: number;
   /** updated_at */
   updated_at?: string;
 }
@@ -153,6 +165,20 @@ export const createPodchannel = (
     }
   
 /**
+ * mess podchannel
+ * @summary Get Messages PodChannel
+ */
+export const getPodchannelMessage = (
+    params: GetPodchannelMessageParams,
+ options?: SecondParameter<typeof customInstance>,) => {
+      return customInstance<ModelsMessage[]>(
+      {url: `/podchannel/message`, method: 'GET',
+        params
+    },
+      options);
+    }
+  
+/**
  * Get podchannel
  * @summary Get podchannel
  */
@@ -166,23 +192,9 @@ export const getPodchannel = (
       options);
     }
   
-/**
- * Create random Channel
- * @summary Create random User
- */
-export const createRandomUser = (
-    params?: CreateRandomUserParams,
- options?: SecondParameter<typeof customInstance>,) => {
-      return customInstance<ModelsUser>(
-      {url: `/user/create`, method: 'POST',
-        params
-    },
-      options);
-    }
-  
 export type GetChannelResult = NonNullable<Awaited<ReturnType<typeof getChannel>>>
 export type CreateChannelResult = NonNullable<Awaited<ReturnType<typeof createChannel>>>
 export type GetChannelsResult = NonNullable<Awaited<ReturnType<typeof getChannels>>>
 export type CreatePodchannelResult = NonNullable<Awaited<ReturnType<typeof createPodchannel>>>
+export type GetPodchannelMessageResult = NonNullable<Awaited<ReturnType<typeof getPodchannelMessage>>>
 export type GetPodchannelResult = NonNullable<Awaited<ReturnType<typeof getPodchannel>>>
-export type CreateRandomUserResult = NonNullable<Awaited<ReturnType<typeof createRandomUser>>>

@@ -1,22 +1,21 @@
-import React, { useState } from 'react'
 import { getChannels } from '@/shared/api/generated'
 import { useQuery } from '@tanstack/react-query'
-
-import { Button } from './ui/button'
+import { useNavigate, useParams } from 'react-router-dom'
 
 type Props = {}
 
 function Header({}: Props) {
-  // const [users, setUsers] = useState<number>()
+  const params = useParams()
+  const navigate = useNavigate()
   const { data: channels, isLoading: channelsLoading } = useQuery({
     queryKey: ['channels'],
     queryFn: () => getChannels(),
     initialData: [],
   })
+  console.log('CHANNELWA', channels)
   return (
     <div className="container mx-auto p-4">
       <h1 className="mb-4 text-2xl font-bold">WebSocket Communication</h1>
-      {/* <Button>{users}</Button> */}
       {channelsLoading ? (
         <p>Loading channels...</p>
       ) : (
@@ -26,8 +25,8 @@ function Header({}: Props) {
             {channels?.map(channel => (
               <button
                 key={channel.id}
-                onClick={() => handleChannelClick(channel.id)}
-                className={`rounded px-4 py-2 ${selectedChannel === channel.id ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+                onClick={() => navigate(`/channel/${channel.id}`)}
+                className={`rounded px-4 py-2 ${params.id === channel.id ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
               >
                 {channel.name}
               </button>

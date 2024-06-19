@@ -6,11 +6,12 @@ import './globals.css'
 import App from '@/pages/App.tsx'
 
 import Providers from './providers.tsx'
+import Routes from './router/routes.tsx'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <Providers>
-      <App />
+      <Routes />
     </Providers>
   </React.StrictMode>,
 )
