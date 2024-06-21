@@ -1,14 +1,17 @@
 import { Outlet } from 'react-router-dom'
 
 import Header from '@/components/Header'
+import { WebSocketProvider } from '@/components/WebSocketProvider'
 
 export default function Layout() {
   return (
     <>
-      <Header />
-      <main>
-        <Outlet />
-      </main>
+      <WebSocketProvider>
+        <Header />
+        <main>
+          <Outlet />
+        </main>
+      </WebSocketProvider>
     </>
   )
 }

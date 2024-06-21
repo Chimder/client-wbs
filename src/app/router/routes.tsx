@@ -4,8 +4,6 @@ import PodChannel from '@/pages/PodChannel'
 import { getPodchannel } from '@/shared/api/generated'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 
-import { WebSocketProvider } from '@/components/WebSocketProvider'
-
 import Layout from './outlet'
 import { PATH } from './path'
 
@@ -35,9 +33,5 @@ const router = createBrowserRouter([
 ])
 
 export default function Routes() {
-  return (
-    <WebSocketProvider>
-      <RouterProvider router={router} />
-    </WebSocketProvider>
-  )
+  return <RouterProvider router={router} />
 }

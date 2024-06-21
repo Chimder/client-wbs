@@ -18,20 +18,23 @@ export const WebSocketContext = createContext<WebSocketContextType>({
 export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const params = useParams()
   const [socket, setSocket] = useState<WebSocket | null>(null)
   const [isConnected, setIsConnected] = useState(false)
   const [liveMessages, setLiveMessages] = useState<{ content: string }[]>([])
 
-  // useEffect(() => {
-  //   setLiveMessages([])
-  // }, [params])
+  const params = useParams()
+  console.log('PARAMSSSS', params)
+
+  useEffect(() => {
+    console.log('RELLLod')
+    setLiveMessages([])
+  }, [params.channelID, params.podchannelID])
 
   useEffect(() => {
     const newSocket = new WebSocket('ws://localhost:4000/ws')
 
     newSocket.onopen = () => {
-      console.log('webs open')
+      console.log('WebSocket open')
       setIsConnected(true)
     }
 
@@ -54,7 +57,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({
     }
 
     newSocket.onclose = () => {
-      console.log('WEBSOC CLOSE')
+      console.log('WebSocket closed')
       setIsConnected(false)
     }
 
@@ -72,7 +75,12 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({
 
   return (
     <WebSocketContext.Provider
-      value={{ socket, isConnected, sendMessage, liveMessages }}
+      value={{
+        socket,
+        isConnected,
+        sendMessage,
+        liveMessages,
+      }}
     >
       {children}
     </WebSocketContext.Provider>

@@ -15,7 +15,6 @@ const Chat: React.FC = () => {
   const { ref, inView } = useInView()
   const initialLoadRef = useRef(true)
 
-  console.log('INITLOAD', initialLoadRef)
   const {
     socket,
     isConnected,
@@ -36,6 +35,8 @@ const Chat: React.FC = () => {
     data: messages,
     fetchNextPage,
     hasNextPage,
+    isRefetching,
+    isFetching,
   } = useInfiniteQuery({
     queryKey: ['messages', podchannelID],
     queryFn: fetchMessages,
@@ -91,9 +92,7 @@ const Chat: React.FC = () => {
     }
   }
 
-  console.log('ARRMESS', messages?.pages)
   useEffect(() => {
-    // if (messages?.pages?.length === 1 && initialLoadRef.current) {
     if (initialLoadRef.current && messages) {
       const timeoutId = setTimeout(() => {
         scrollToBottom()
@@ -102,8 +101,6 @@ const Chat: React.FC = () => {
 
       return () => clearTimeout(timeoutId)
     }
-
-    console.log('<<><><>>>')
   }, [messages])
 
   useEffect(() => {
@@ -127,7 +124,6 @@ const Chat: React.FC = () => {
       <div ref={chatContainerRef} className="h-[50vh] overflow-y-auto">
         {reversedMessages.map((message, i) => (
           <p
-            // ref={i === reversedMessages.length - 1 ? ref : null}
             ref={i === 9 ? ref : null}
             key={message.id}
             className="mb-2 bg-slate-600 p-4"
