@@ -1,7 +1,6 @@
 // Channel.tsx
 import React from 'react'
 
-import Chat from '@/components/Chat'
 import PodChannelList from '@/components/PodChannelList'
 
 const Channel: React.FC = () => {

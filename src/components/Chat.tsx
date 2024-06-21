@@ -1,20 +1,29 @@
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useRef, useState } from 'react'
 import { getPodchannelMessage } from '@/shared/api/generated'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { useInView } from 'react-intersection-observer'
 import { useParams } from 'react-router-dom'
 
+import { WebSocketContext } from '@/components/WebSocketProvider'
+
+import { Button } from './ui/button'
+
 const Chat: React.FC = () => {
-  const params = useParams()
-  const { podchannelID } = useParams()
-  const [inputValue, setInputValue] = useState('')
-  const [liveMessages, setLiveMessages] = useState<
-    { id: number; content: string; created_at: Date }[]
-  >([])
+  const { podchannelID, channelID } = useParams()
+  const [inputValue, setInputValue] = useState<string>('')
+  const chatContainerRef = useRef<HTMLDivElement>(null)
+  const { ref, inView } = useInView()
+
+  const {
+    socket,
+    isConnected,
+    sendMessage: sendWebSocketMessage,
+    liveMessages,
+  } = useContext(WebSocketContext)
 
   const fetchMessages = async ({ pageParam = 1 }) => {
     const response = await getPodchannelMessage({
-      podchannel_id: Number(params.podchannelID),
+      podchannel_id: Number(podchannelID),
       limit: 10,
       page: pageParam,
     })
@@ -26,41 +35,126 @@ const Chat: React.FC = () => {
     fetchNextPage,
     hasNextPage,
   } = useInfiniteQuery({
-    queryKey: ['messages', params.podchannelID],
+    queryKey: ['messages', podchannelID],
     queryFn: fetchMessages,
-    getNextPageParam: (lastPage, pages) => {
-      if (lastPage.length === 0) {
+    getNextPageParam: (lastPage, pages, lastPageParam) => {
+      if (lastPage.length < 10) {
         return undefined
       }
-      return pages.length + 1
+      return lastPageParam + 1
     },
-    // enabled: !!params.podchannelId,
     initialPageParam: 1,
+    enabled: !!podchannelID,
     refetchOnWindowFocus: false,
     retry: 0,
   })
-
-  const { ref, inView } = useInView()
 
   useEffect(() => {
     if (inView && hasNextPage) {
       fetchNextPage()
     }
-  }, [inView, fetchNextPage, hasNextPage])
+  }, [inView])
 
-  const allMessages = [
-    ...(messages?.pages?.flat() || []),
-    ...liveMessages,
-  ].reverse()
+  useEffect(() => {
+    if (podchannelID && channelID) {
+      sendJoinUser()
+    }
+  }, [])
+
+  const sendJoinUser = () => {
+    if (socket) {
+      socket.send(
+        JSON.stringify({
+          event: 'join_podchannel',
+          channel_id: Number(channelID),
+          podchannel_id: Number(podchannelID),
+        }),
+      )
+    }
+  }
+
+  const sendMessage = () => {
+    if (socket && inputValue.trim() !== '' && podchannelID) {
+      const message = JSON.stringify({
+        event: 'message',
+        data: inputValue,
+        channel_id: Number(channelID),
+        podchannel_id: Number(podchannelID),
+      })
+      sendWebSocketMessage(message)
+      setInputValue('')
+      setTimeout(() => {
+        scrollToBottom()
+      }, 200)
+    }
+  }
+
+  const scrollToBottom = () => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight
+    }
+  }
+
+  useEffect(() => {
+    scrollToBottom()
+  }, [liveMessages])
+
+  // useEffect(() => {
+  //   const timeoutId = setTimeout(() => {
+  //     scrollToBottom()
+  //   }, 200)
+
+  //   return () => clearTimeout(timeoutId)
+  // }, [])
+  useEffect(() => {
+    if (messages?.pages?.length === 1) {
+      const timeoutId = setTimeout(() => {
+        scrollToBottom()
+      }, 200)
+
+      return () => clearTimeout(timeoutId)
+    }
+  }, [messages])
+
+  // const reversedMessages = messages ? [...messages].reverse() : []
+  const reversedMessages = messages ? messages.pages.flat().reverse() : []
 
   return (
-    <div className="h-64 overflow-y-scroll rounded border p-4">
-      {allMessages.map((message, index) => (
-        <p key={index} className="mb-2">
-          {message.content}
-        </p>
-      ))}
+    <div className="flex w-full flex-col overflow-x-hidden">
+      <div ref={chatContainerRef} className="h-[50vh] overflow-y-auto">
+        {reversedMessages.map((message, i) => (
+          // <p ref={ref} key={message.id} className="mb-2 bg-slate-600 p-4">
+          <p
+            ref={i === 0 ? ref : null}
+            key={message.id}
+            className="mb-2 bg-slate-600 p-4"
+          >
+            {message.content}
+          </p>
+        ))}
+        {liveMessages.map((message, index) => (
+          <p key={`live-${index}`} className="mb-2">
+            {message.content}
+          </p>
+        ))}
+      </div>
       <div ref={ref}></div>
+      <div className="input-container fixed bottom-0 right-0 w-full px-4">
+        <input
+          type="text"
+          value={inputValue}
+          onChange={e => setInputValue(e.target.value)}
+          placeholder="Enter message"
+          className="mb-2 w-full rounded border p-2"
+        />
+        <Button
+          onClick={sendMessage}
+          className="bg-blue-500 hover:bg-blue-800"
+          disabled={!isConnected}
+        >
+          Send
+        </Button>
+      </div>
     </div>
   )
 }

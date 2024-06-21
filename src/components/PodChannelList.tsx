@@ -1,27 +1,12 @@
 // PodChannelList.tsx
 import React from 'react'
-import {
-  getPodchannel,
-  GetPodchannelMessageResult,
-  GetPodchannelResult,
-} from '@/shared/api/generated'
-import { useMutation } from '@tanstack/react-query'
+import { GetPodchannelResult } from '@/shared/api/generated'
 import { useLoaderData, useNavigate, useParams } from 'react-router-dom'
 
 const PodChannelList: React.FC = () => {
   const navigate = useNavigate()
   const params = useParams()
   const data = useLoaderData() as GetPodchannelResult
-
-  // const {
-  //   mutate: getPodchannels,
-  //   data: podchannels,
-  //   isLoading: podchannelsLoading,
-  // } = useMutation({
-  //   mutationKey: ['get-podchannels'],
-  //   mutationFn: ({ id }: { id: number }) => getPodchannel({ channelId: id }),
-  // })
-  console.log('PPODDD', data)
 
   return (
     <div className="mb-4">
