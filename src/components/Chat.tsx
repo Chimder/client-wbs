@@ -31,32 +31,32 @@ const Chat: React.FC = () => {
     return response
   }
 
-  const {
-    data: messages,
-    fetchNextPage,
-    hasNextPage,
-    isRefetching,
-    isFetching,
-  } = useInfiniteQuery({
-    queryKey: ['messages', podchannelID],
-    queryFn: fetchMessages,
-    getNextPageParam: (lastPage, pages, lastPageParam) => {
-      if (lastPage.length < 10) {
-        return undefined
-      }
-      return lastPageParam + 1
-    },
-    initialPageParam: 1,
-    enabled: !!podchannelID,
-    refetchOnWindowFocus: false,
-    retry: 0,
-  })
+  // const {
+  //   data: messages,
+  //   fetchNextPage,
+  //   hasNextPage,
+  //   isRefetching,
+  //   isFetching,
+  // } = useInfiniteQuery({
+  //   queryKey: ['messages', podchannelID],
+  //   queryFn: fetchMessages,
+  //   getNextPageParam: (lastPage, pages, lastPageParam) => {
+  //     if (lastPage.length < 10) {
+  //       return undefined
+  //     }
+  //     return lastPageParam + 1
+  //   },
+  //   initialPageParam: 1,
+  //   enabled: !!podchannelID,
+  //   refetchOnWindowFocus: false,
+  //   retry: 0,
+  // })
 
-  useEffect(() => {
-    if (inView && hasNextPage) {
-      fetchNextPage()
-    }
-  }, [inView, hasNextPage, fetchNextPage])
+  // useEffect(() => {
+  //   if (inView && hasNextPage) {
+  //     fetchNextPage()
+  //   }
+  // }, [inView, hasNextPage, fetchNextPage])
 
   const sendJoinUser = () => {
     if (socket) {
@@ -92,16 +92,16 @@ const Chat: React.FC = () => {
     }
   }
 
-  useEffect(() => {
-    if (initialLoadRef.current && messages) {
-      const timeoutId = setTimeout(() => {
-        scrollToBottom()
-        initialLoadRef.current = false
-      }, 0)
+  // useEffect(() => {
+  //   if (initialLoadRef.current && messages) {
+  //     const timeoutId = setTimeout(() => {
+  //       scrollToBottom()
+  //       initialLoadRef.current = false
+  //     }, 0)
 
-      return () => clearTimeout(timeoutId)
-    }
-  }, [messages])
+  //     return () => clearTimeout(timeoutId)
+  //   }
+  // }, [messages])
 
   useEffect(() => {
     scrollToBottom()
@@ -117,12 +117,12 @@ const Chat: React.FC = () => {
     return () => clearTimeout(timeoutId)
   }, [podchannelID, channelID])
 
-  const reversedMessages = messages ? messages.pages.flat().reverse() : []
+  // const reversedMessages = messages ? messages.pages.flat().reverse() : []
 
   return (
     <div className="flex w-full flex-col overflow-x-hidden">
       <div ref={chatContainerRef} className="h-[50vh] overflow-y-auto">
-        {reversedMessages.map((message, i) => (
+        {/* {reversedMessages.map((message, i) => (
           <p
             ref={i === 9 ? ref : null}
             key={message.id}
@@ -130,7 +130,7 @@ const Chat: React.FC = () => {
           >
             {message.content}
           </p>
-        ))}
+        ))} */}
         {liveMessages.map((message, index) => (
           <p key={`live-${index}`} className="mb-2">
             {message.content}
