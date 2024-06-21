@@ -1,4 +1,5 @@
 import React, { createContext, useEffect, useState } from 'react'
+import { useParams } from 'react-router-dom'
 
 interface WebSocketContextType {
   socket: WebSocket | null
@@ -17,9 +18,14 @@ export const WebSocketContext = createContext<WebSocketContextType>({
 export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
+  const params = useParams()
   const [socket, setSocket] = useState<WebSocket | null>(null)
   const [isConnected, setIsConnected] = useState(false)
   const [liveMessages, setLiveMessages] = useState<{ content: string }[]>([])
+
+  // useEffect(() => {
+  //   setLiveMessages([])
+  // }, [params])
 
   useEffect(() => {
     const newSocket = new WebSocket('ws://localhost:4000/ws')

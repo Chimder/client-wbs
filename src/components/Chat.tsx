@@ -13,7 +13,9 @@ const Chat: React.FC = () => {
   const [inputValue, setInputValue] = useState<string>('')
   const chatContainerRef = useRef<HTMLDivElement>(null)
   const { ref, inView } = useInView()
+  const initialLoadRef = useRef(true)
 
+  console.log('INITLOAD', initialLoadRef)
   const {
     socket,
     isConnected,
@@ -53,13 +55,7 @@ const Chat: React.FC = () => {
     if (inView && hasNextPage) {
       fetchNextPage()
     }
-  }, [inView])
-
-  useEffect(() => {
-    if (podchannelID && channelID) {
-      sendJoinUser()
-    }
-  }, [])
+  }, [inView, hasNextPage, fetchNextPage])
 
   const sendJoinUser = () => {
     if (socket) {
@@ -95,37 +91,44 @@ const Chat: React.FC = () => {
     }
   }
 
+  console.log('ARRMESS', messages?.pages)
+  useEffect(() => {
+    // if (messages?.pages?.length === 1 && initialLoadRef.current) {
+    if (initialLoadRef.current && messages) {
+      const timeoutId = setTimeout(() => {
+        scrollToBottom()
+        initialLoadRef.current = false
+      }, 0)
+
+      return () => clearTimeout(timeoutId)
+    }
+
+    console.log('<<><><>>>')
+  }, [messages])
+
   useEffect(() => {
     scrollToBottom()
   }, [liveMessages])
 
-  // useEffect(() => {
-  //   const timeoutId = setTimeout(() => {
-  //     scrollToBottom()
-  //   }, 200)
-
-  //   return () => clearTimeout(timeoutId)
-  // }, [])
   useEffect(() => {
-    if (messages?.pages?.length === 1) {
-      const timeoutId = setTimeout(() => {
-        scrollToBottom()
-      }, 200)
-
-      return () => clearTimeout(timeoutId)
+    if (podchannelID && channelID) {
+      sendJoinUser()
     }
-  }, [messages])
+    const timeoutId = setTimeout(() => {
+      scrollToBottom()
+    }, 200)
+    return () => clearTimeout(timeoutId)
+  }, [podchannelID, channelID])
 
-  // const reversedMessages = messages ? [...messages].reverse() : []
   const reversedMessages = messages ? messages.pages.flat().reverse() : []
 
   return (
     <div className="flex w-full flex-col overflow-x-hidden">
       <div ref={chatContainerRef} className="h-[50vh] overflow-y-auto">
         {reversedMessages.map((message, i) => (
-          // <p ref={ref} key={message.id} className="mb-2 bg-slate-600 p-4">
           <p
-            ref={i === 0 ? ref : null}
+            // ref={i === reversedMessages.length - 1 ? ref : null}
+            ref={i === 9 ? ref : null}
             key={message.id}
             className="mb-2 bg-slate-600 p-4"
           >
