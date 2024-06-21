@@ -1,7 +1,8 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useContext, useEffect, useRef, useState } from 'react'
-import { getPodchannelMessage } from '@/shared/api/generated'
-import { useInfiniteQuery } from '@tanstack/react-query'
-import { useInView } from 'react-intersection-observer'
+// import { getPodchannelMessage } from '@/shared/api/generated'
+// import { useInfiniteQuery } from '@tanstack/react-query'
+// import { useInView } from 'react-intersection-observer'
 import { useParams } from 'react-router-dom'
 
 import { WebSocketContext } from '@/components/WebSocketProvider'
@@ -12,8 +13,8 @@ const Chat: React.FC = () => {
   const { podchannelID, channelID } = useParams()
   const [inputValue, setInputValue] = useState<string>('')
   const chatContainerRef = useRef<HTMLDivElement>(null)
-  const { ref, inView } = useInView()
-  const initialLoadRef = useRef(true)
+  // const { ref, inView } = useInView()
+  // const initialLoadRef = useRef(true)
 
   const {
     socket,
@@ -22,14 +23,14 @@ const Chat: React.FC = () => {
     liveMessages,
   } = useContext(WebSocketContext)
 
-  const fetchMessages = async ({ pageParam = 1 }) => {
-    const response = await getPodchannelMessage({
-      podchannel_id: Number(podchannelID),
-      limit: 10,
-      page: pageParam,
-    })
-    return response
-  }
+  // const fetchMessages = async ({ pageParam = 1 }) => {
+  //   const response = await getPodchannelMessage({
+  //     podchannel_id: Number(podchannelID),
+  //     limit: 10,
+  //     page: pageParam,
+  //   })
+  //   return response
+  // }
 
   // const {
   //   data: messages,
@@ -137,7 +138,7 @@ const Chat: React.FC = () => {
           </p>
         ))}
       </div>
-      <div ref={ref}></div>
+      {/* <div ref={ref}></div> */}
       <div className="input-container fixed bottom-0 right-0 w-full px-4">
         <input
           type="text"
