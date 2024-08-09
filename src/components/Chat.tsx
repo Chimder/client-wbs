@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useContext, useEffect, useRef, useState } from 'react'
-// import { getPodchannelMessage } from '@/shared/api/generated'
-// import { useInfiniteQuery } from '@tanstack/react-query'
-// import { useInView } from 'react-intersection-observer'
+import { getPodchannelMessage } from '@/shared/api/generated'
+import { useInfiniteQuery } from '@tanstack/react-query'
+import { useInView } from 'react-intersection-observer'
 import { useParams } from 'react-router-dom'
 
 import { WebSocketContext } from '@/components/WebSocketProvider'
@@ -10,12 +10,6 @@ import { WebSocketContext } from '@/components/WebSocketProvider'
 import { Button } from './ui/button'
 
 const Chat: React.FC = () => {
-  const { podchannelID, channelID } = useParams()
-  const [inputValue, setInputValue] = useState<string>('')
-  const chatContainerRef = useRef<HTMLDivElement>(null)
-  // const { ref, inView } = useInView()
-  // const initialLoadRef = useRef(true)
-
   const {
     socket,
     isConnected,
@@ -23,41 +17,78 @@ const Chat: React.FC = () => {
     liveMessages,
   } = useContext(WebSocketContext)
 
-  // const fetchMessages = async ({ pageParam = 1 }) => {
-  //   const response = await getPodchannelMessage({
-  //     podchannel_id: Number(podchannelID),
-  //     limit: 10,
-  //     page: pageParam,
-  //   })
-  //   return response
-  // }
+  const { podchannelID, channelID } = useParams()
+  const [inputValue, setInputValue] = useState<string>('')
+  const chatContainerRef = useRef<HTMLDivElement>(null)
+  const initialLoadRef = useRef(true)
 
-  // const {
-  //   data: messages,
-  //   fetchNextPage,
-  //   hasNextPage,
-  //   isRefetching,
-  //   isFetching,
-  // } = useInfiniteQuery({
-  //   queryKey: ['messages', podchannelID],
-  //   queryFn: fetchMessages,
-  //   getNextPageParam: (lastPage, pages, lastPageParam) => {
-  //     if (lastPage.length < 10) {
-  //       return undefined
-  //     }
-  //     return lastPageParam + 1
-  //   },
-  //   initialPageParam: 1,
-  //   enabled: !!podchannelID,
-  //   refetchOnWindowFocus: false,
-  //   retry: 0,
-  // })
+  const scrollToBottom = () => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight
+    }
+  }
+  useEffect(() => {
+    scrollToBottom()
+  }, [liveMessages])
 
-  // useEffect(() => {
-  //   if (inView && hasNextPage) {
-  //     fetchNextPage()
-  //   }
-  // }, [inView, hasNextPage, fetchNextPage])
+  useEffect(() => {
+    if (podchannelID && channelID) {
+      sendJoinUser()
+    }
+    const timeoutId = setTimeout(() => {
+      scrollToBottom()
+    }, 200)
+    return () => clearTimeout(timeoutId)
+  }, [podchannelID, channelID])
+
+  const fetchMessages = async ({ pageParam = 1 }) => {
+    const response = await getPodchannelMessage({
+      podchannel_id: Number(podchannelID),
+      limit: 50,
+      page: pageParam,
+    })
+    return response
+  }
+
+  const {
+    data: messages,
+    fetchNextPage,
+    hasNextPage,
+    isRefetching,
+    isFetching,
+  } = useInfiniteQuery({
+    queryKey: ['messages', podchannelID],
+    queryFn: fetchMessages,
+    getNextPageParam: (lastPage, pages, lastPageParam) => {
+      if (lastPage.length < 9) {
+        return undefined
+      }
+      return lastPageParam + 1
+    },
+    initialPageParam: 1,
+    enabled: !!podchannelID,
+    refetchOnWindowFocus: false,
+    // staleTime: 0,
+    retry: 0,
+  })
+
+  useEffect(() => {
+    if (initialLoadRef.current && messages) {
+      const timeoutId = setTimeout(() => {
+        scrollToBottom()
+        initialLoadRef.current = false
+      }, 0)
+
+      return () => clearTimeout(timeoutId)
+    }
+  }, [messages])
+
+  const { ref, inView } = useInView({ triggerOnce: false, skip: !hasNextPage })
+  useEffect(() => {
+    if (inView && hasNextPage) {
+      fetchNextPage()
+    }
+  }, [inView, hasNextPage, fetchNextPage])
 
   const sendJoinUser = () => {
     if (socket) {
@@ -87,51 +118,16 @@ const Chat: React.FC = () => {
     }
   }
 
-  const scrollToBottom = () => {
-    if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight
-    }
-  }
-
-  // useEffect(() => {
-  //   if (initialLoadRef.current && messages) {
-  //     const timeoutId = setTimeout(() => {
-  //       scrollToBottom()
-  //       initialLoadRef.current = false
-  //     }, 0)
-
-  //     return () => clearTimeout(timeoutId)
-  //   }
-  // }, [messages])
-
-  useEffect(() => {
-    scrollToBottom()
-  }, [liveMessages])
-
-  useEffect(() => {
-    if (podchannelID && channelID) {
-      sendJoinUser()
-    }
-    const timeoutId = setTimeout(() => {
-      scrollToBottom()
-    }, 200)
-    return () => clearTimeout(timeoutId)
-  }, [podchannelID, channelID])
-
-  // const reversedMessages = messages ? messages.pages.flat().reverse() : []
+  const reversedMessages = messages ? messages.pages.flat().reverse() : []
 
   return (
     <div className="flex w-full flex-col overflow-x-hidden">
       <div ref={chatContainerRef} className="h-[50vh] overflow-y-auto">
-        {/* {reversedMessages.map((message, i) => (
-          <p
-            ref={i === 9 ? ref : null}
-            key={message.id}
-            className="mb-2 bg-slate-600 p-4"
-          >
+        {reversedMessages.map((message, i) => (
+          <p ref={ref} key={message.id} className="mb-2 bg-slate-600 p-4">
             {message.content}
           </p>
-        ))} */}
+        ))}
         {liveMessages.map((message, index) => (
           <p key={`live-${index}`} className="mb-2">
             {message.content}
