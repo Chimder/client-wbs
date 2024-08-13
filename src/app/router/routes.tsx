@@ -2,7 +2,11 @@ import App from '@/pages/App'
 import Channel from '@/pages/Channel'
 import PodChannel from '@/pages/PodChannel'
 import { getPodchannel } from '@/shared/api/generated'
-import { createBrowserRouter, RouterProvider } from 'react-router-dom'
+import {
+  createBrowserRouter,
+  RouterProvider,
+  ScrollRestoration,
+} from 'react-router-dom'
 
 import Layout from './outlet'
 import { PATH } from './path'
@@ -33,5 +37,10 @@ const router = createBrowserRouter([
 ])
 
 export default function Routes() {
-  return <RouterProvider router={router} />
+  return (
+    <>
+     
+      <RouterProvider router={router} />
+    </>
+  )
 }

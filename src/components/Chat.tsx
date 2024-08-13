@@ -1,13 +1,13 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useContext, useEffect, useRef, useState } from 'react'
 import { getPodchannelMessage } from '@/shared/api/generated'
-import { useInfiniteQuery } from '@tanstack/react-query'
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import { useInView } from 'react-intersection-observer'
 import { useParams } from 'react-router-dom'
 
 import { WebSocketContext } from '@/components/WebSocketProvider'
 
 import { Button } from './ui/button'
+import { Skeleton } from './ui/skeleton'
 
 const Chat: React.FC = () => {
   const {
@@ -27,24 +27,21 @@ const Chat: React.FC = () => {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight
     }
   }
-  useEffect(() => {
-    scrollToBottom()
-  }, [liveMessages])
+  // useEffect(() => {
+  //   scrollToBottom()
+  // }, [liveMessages])
 
   useEffect(() => {
     if (podchannelID && channelID) {
       sendJoinUser()
     }
-    const timeoutId = setTimeout(() => {
-      scrollToBottom()
-    }, 200)
-    return () => clearTimeout(timeoutId)
+    // scrollToBottom()
   }, [podchannelID, channelID])
 
   const fetchMessages = async ({ pageParam = 1 }) => {
     const response = await getPodchannelMessage({
       podchannel_id: Number(podchannelID),
-      limit: 50,
+      limit: 10,
       page: pageParam,
     })
     return response
@@ -54,13 +51,16 @@ const Chat: React.FC = () => {
     data: messages,
     fetchNextPage,
     hasNextPage,
-    isRefetching,
+    isFetchingNextPage,
     isFetching,
   } = useInfiniteQuery({
     queryKey: ['messages', podchannelID],
     queryFn: fetchMessages,
+    // select(data) {
+    //   console.log('>>>>', data)
+    // },
     getNextPageParam: (lastPage, pages, lastPageParam) => {
-      if (lastPage.length < 9) {
+      if (!lastPage || lastPage.length < 9) {
         return undefined
       }
       return lastPageParam + 1
@@ -68,7 +68,7 @@ const Chat: React.FC = () => {
     initialPageParam: 1,
     enabled: !!podchannelID,
     refetchOnWindowFocus: false,
-    // staleTime: 0,
+    staleTime: 800000,
     retry: 0,
   })
 
@@ -88,7 +88,7 @@ const Chat: React.FC = () => {
     if (inView && hasNextPage) {
       fetchNextPage()
     }
-  }, [inView, hasNextPage, fetchNextPage])
+  }, [inView, hasNextPage])
 
   const sendJoinUser = () => {
     if (socket) {
@@ -106,7 +106,8 @@ const Chat: React.FC = () => {
     if (socket && inputValue.trim() !== '' && podchannelID) {
       const message = JSON.stringify({
         event: 'message',
-        data: inputValue,
+        message: inputValue,
+        created_at: new Date().toISOString(),
         channel_id: Number(channelID),
         podchannel_id: Number(podchannelID),
       })
@@ -114,7 +115,7 @@ const Chat: React.FC = () => {
       setInputValue('')
       setTimeout(() => {
         scrollToBottom()
-      }, 200)
+      }, 0)
     }
   }
 
@@ -123,18 +124,50 @@ const Chat: React.FC = () => {
   return (
     <div className="flex w-full flex-col overflow-x-hidden">
       <div ref={chatContainerRef} className="h-[50vh] overflow-y-auto">
-        {reversedMessages.map((message, i) => (
-          <p ref={ref} key={message.id} className="mb-2 bg-slate-600 p-4">
-            {message.content}
-          </p>
-        ))}
+        {isFetching && !isFetchingNextPage ? (
+          Array.from({ length: 50 }, (_, index) => (
+            <React.Fragment key={`skeleton-${index}`}>
+              <div className="relative w-full rounded-sm">
+                <div className="">
+                  <Skeleton className="mb-2 bg-slate-300 p-8" />
+                </div>
+              </div>
+            </React.Fragment>
+          ))
+        ) : reversedMessages && reversedMessages.length > 0 ? (
+          reversedMessages.map((message, i) => (
+            <div
+              ref={ref}
+              key={message?.id}
+              className="mb-2 flex items-center justify-between bg-slate-600 p-4"
+            >
+              <p>{message?.content}</p>
+              <span className="self-start text-xs text-gray-400">
+                {new Date(message?.created_at!).toLocaleTimeString([], {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })}
+              </span>
+            </div>
+          ))
+        ) : (
+          <div>lox</div>
+        )}
         {liveMessages.map((message, index) => (
-          <p key={`live-${index}`} className="mb-2">
-            {message.content}
-          </p>
+          <div
+            key={`live-${index}`}
+            className="mb-2 flex items-center justify-between bg-slate-600 p-4"
+          >
+            <p>{message?.message}</p>
+            <span className="self-start text-xs text-gray-400">
+              {new Date(message?.created_at).toLocaleTimeString([], {
+                hour: '2-digit',
+                minute: '2-digit',
+              })}
+            </span>
+          </div>
         ))}
       </div>
-      {/* <div ref={ref}></div> */}
       <div className="input-container fixed bottom-0 right-0 w-full px-4">
         <input
           type="text"
