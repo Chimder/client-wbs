@@ -1,13 +1,13 @@
 import { Outlet } from 'react-router-dom'
 
-import Header from '@/components/Header'
 import { WebSocketProvider } from '@/components/WebSocketProvider'
+import NavBar from '@/components/navBar'
 
 export default function Layout() {
   return (
     <>
       <WebSocketProvider>
-        <Header />
+        <NavBar />
         <main>
           <Outlet />
         </main>

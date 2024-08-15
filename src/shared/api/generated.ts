@@ -6,7 +6,7 @@
  * OpenAPI spec version: 1.0
  */
 import { customInstance } from './axios.instance';
-export type GetPodchannelParams = {
+export type GetPodchannelsParams = {
 /**
  * ID of the podchannel
  */
@@ -57,50 +57,34 @@ export type GetChannelParams = {
 id: string;
 };
 
-export interface ModelsPodchannel {
-  /** channel_id */
+export interface QueriesPodchannel {
   channel_id?: number;
-  /** created_at */
   created_at?: string;
-  /** id */
   id?: number;
-  /** name */
   name?: string;
-  /** types */
   types?: string;
-  /** updated_at */
   updated_at?: string;
 }
 
-export interface ModelsMessage {
-  /** author_id */
+export interface QueriesMessage {
   author_id?: string;
-  /** content */
-  content?: string;
-  /** created_at */
   created_at?: string;
-  /** id */
   id?: number;
-  /** podchannel_id */
+  message?: string;
   podchannel_id?: number;
-  /** updated_at */
   updated_at?: string;
 }
 
-export interface ModelsChannel {
-  /** created_at */
+export interface QueriesChannel {
   created_at?: string;
-  /** id */
   id?: number;
-  /** name */
   name?: string;
-  /** updated_at */
   updated_at?: string;
 }
 
 export interface HandlerChannelWithPodchannels {
-  channel?: ModelsChannel;
-  podchannels?: ModelsPodchannel[];
+  channel?: QueriesChannel;
+  podchannels?: QueriesPodchannel[];
 }
 
 
@@ -130,7 +114,7 @@ export const getChannel = (
 export const createChannel = (
     params?: CreateChannelParams,
  options?: SecondParameter<typeof customInstance>,) => {
-      return customInstance<ModelsChannel>(
+      return customInstance<QueriesChannel>(
       {url: `/channel/create`, method: 'POST',
         params
     },
@@ -144,7 +128,7 @@ export const createChannel = (
 export const getChannels = (
     
  options?: SecondParameter<typeof customInstance>,) => {
-      return customInstance<ModelsChannel[]>(
+      return customInstance<QueriesChannel[]>(
       {url: `/channels`, method: 'GET'
     },
       options);
@@ -171,7 +155,7 @@ export const createPodchannel = (
 export const getPodchannelMessage = (
     params: GetPodchannelMessageParams,
  options?: SecondParameter<typeof customInstance>,) => {
-      return customInstance<ModelsMessage[]>(
+      return customInstance<QueriesMessage[]>(
       {url: `/podchannel/message`, method: 'GET',
         params
     },
@@ -179,13 +163,13 @@ export const getPodchannelMessage = (
     }
   
 /**
- * Get podchannel
- * @summary Get podchannel
+ * Get podchannels
+ * @summary Get podchannels
  */
-export const getPodchannel = (
-    params: GetPodchannelParams,
+export const getPodchannels = (
+    params: GetPodchannelsParams,
  options?: SecondParameter<typeof customInstance>,) => {
-      return customInstance<ModelsPodchannel[]>(
+      return customInstance<QueriesPodchannel[]>(
       {url: `/podchannels`, method: 'GET',
         params
     },
@@ -197,4 +181,4 @@ export type CreateChannelResult = NonNullable<Awaited<ReturnType<typeof createCh
 export type GetChannelsResult = NonNullable<Awaited<ReturnType<typeof getChannels>>>
 export type CreatePodchannelResult = NonNullable<Awaited<ReturnType<typeof createPodchannel>>>
 export type GetPodchannelMessageResult = NonNullable<Awaited<ReturnType<typeof getPodchannelMessage>>>
-export type GetPodchannelResult = NonNullable<Awaited<ReturnType<typeof getPodchannel>>>
+export type GetPodchannelsResult = NonNullable<Awaited<ReturnType<typeof getPodchannels>>>

@@ -17,7 +17,8 @@ module.exports = {
   vueIndentScriptAndStyle: true,
   jsxSingleQuote: false,
   jsxPrintWidth: 120,
-  tailwindcssWrapAttributes: true,
+  // tailwindcssWrapAttributes: true,
+  tailwindcssWrapAttributes: false,
   overrides: [
     {
       files: ['*.json', '*.json5', '*.jsonc'],
@@ -51,5 +52,8 @@ module.exports = {
   importOrderParserPlugins: ['typescript', 'jsx', 'decorators-legacy'],
   importOrderMergeDuplicateImports: true,
   importOrderCombineTypeAndValueImports: true,
-  plugins: ['@ianvs/prettier-plugin-sort-imports', 'prettier-plugin-tailwindcss'],
+  plugins: [
+    '@ianvs/prettier-plugin-sort-imports',
+    'prettier-plugin-tailwindcss',
+  ],
 }

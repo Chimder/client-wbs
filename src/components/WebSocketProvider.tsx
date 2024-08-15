@@ -1,52 +1,64 @@
 import React, { createContext, useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 
+export type WebsocketMessage = {
+  event: string
+  author_id: string
+  channel_id: string
+  message: string
+  created_at: string
+  podchannel_id: number
+}
+
 interface WebSocketContextType {
   socket: WebSocket | null
   isConnected: boolean
   sendMessage: (message: string) => void
-  liveMessages: { content: string }[]
+  liveMessages: { [key: string]: WebsocketMessage[] }
+  sendJoinUser: (channelID: string) => void
 }
 
 export const WebSocketContext = createContext<WebSocketContextType>({
   socket: null,
   isConnected: false,
   sendMessage: () => {},
-  liveMessages: [],
+  liveMessages: {},
+  sendJoinUser: () => {},
 })
 
 export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const params = useParams()
-
+  const { podchannelID, channelID } = useParams()
   const [socket, setSocket] = useState<WebSocket | null>(null)
   const [isConnected, setIsConnected] = useState(false)
-  const [liveMessages, setLiveMessages] = useState<{ content: string }[]>([])
+  const [liveMessages, setLiveMessages] = useState<{
+    [key: string]: WebsocketMessage[]
+  }>({})
 
   useEffect(() => {
-    console.log('RELLLod')
-    setLiveMessages([])
-  }, [params.channelID, params.podchannelID])
+    const key = `${channelID}-${podchannelID}`
+    if (!liveMessages[key]) {
+      setLiveMessages(prev => ({ ...prev, [key]: [] }))
+    }
+  }, [channelID, podchannelID])
 
   useEffect(() => {
     const newSocket = new WebSocket('ws://localhost:4000/ws')
     newSocket.onopen = () => {
-      console.log('WebSocket open')
       setIsConnected(true)
     }
 
     newSocket.onmessage = event => {
-      const message = JSON.parse(event.data)
-      console.log('EVENT', message)
+      const data: WebsocketMessage = JSON.parse(event.data)
+      const key = `${data.channel_id}-${data.podchannel_id}`
+      console.log('>>>>>>', data)
 
-      if (message.event !== 'users') {
-        setLiveMessages(prevMessages => [
-          ...prevMessages,
-          {
-            content: message.data,
-          },
-        ])
+      if (data.event === 'message') {
+        setLiveMessages(prev => ({
+          ...prev,
+          [key]: [...(prev[key] || []), data],
+        }))
       }
     }
 
@@ -55,7 +67,6 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({
     }
 
     newSocket.onclose = () => {
-      console.log('WebSocket closed')
       setIsConnected(false)
     }
 
@@ -65,6 +76,18 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }, [])
 
+  const sendJoinUser = (channelID: string) => {
+    if (socket) {
+      socket.send(
+        JSON.stringify({
+          event: 'join_podchannel',
+          channel_id: Number(channelID),
+          // podchannel_id: Number(podchannelID),
+        }),
+      )
+    }
+  }
+
   const sendMessage = (message: string) => {
     if (socket) {
       socket.send(message)
@@ -73,12 +96,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({
 
   return (
     <WebSocketContext.Provider
-      value={{
-        socket,
-        isConnected,
-        sendMessage,
-        liveMessages,
-      }}
+      value={{ socket, isConnected, sendMessage, liveMessages, sendJoinUser }}
     >
       {children}
     </WebSocketContext.Provider>

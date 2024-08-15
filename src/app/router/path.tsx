@@ -1,5 +1,5 @@
 export const PATH = {
   HOME: '/',
-  CHANNEL: '/channel/:id',
+  CHANNEL: '/channel/:channelID',
   PODCHANNEL: '/channel/:channelID/:podchannelID',
 }

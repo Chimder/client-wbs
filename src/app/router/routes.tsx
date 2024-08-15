@@ -1,7 +1,6 @@
 import App from '@/pages/App'
 import Channel from '@/pages/Channel'
-import PodChannel from '@/pages/PodChannel'
-import { getPodchannel } from '@/shared/api/generated'
+import { getPodchannels } from '@/shared/api/generated'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 
 import Layout from './outlet'
@@ -18,20 +17,26 @@ const router = createBrowserRouter([
       {
         path: PATH.CHANNEL,
         element: <Channel />,
-        loader: async ({ params }) => {
-          const load = await getPodchannel({ channelId: Number(params.id) })
+        // loader: async ({ params }) => {
+        //   const load = await getPodchannels({
+        //     channelId: Number(params.channelID),
+        //   })
 
-          return load
-        },
+        //   return load
+        // },
       },
-      {
-        path: PATH.PODCHANNEL,
-        element: <PodChannel />,
-      },
+      // {
+      //   path: PATH.PODCHANNEL,
+      //   element: <PodChannel />,
+      // },
     ],
   },
 ])
 
 export default function Routes() {
-  return <RouterProvider router={router} />
+  return (
+    <>
+      <RouterProvider router={router} />
+    </>
+  )
 }
