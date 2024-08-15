@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useRef, useState } from 'react'
 import { getPodchannelMessage } from '@/shared/api/generated'
-import { useInfiniteQuery } from '@tanstack/react-query'
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import { useInView } from 'react-intersection-observer'
 import { useParams } from 'react-router-dom'
 
@@ -48,6 +48,9 @@ const Chat: React.FC = () => {
   } = useInfiniteQuery({
     queryKey: ['messages', podchannelID],
     queryFn: fetchMessages,
+    // select(data) {
+    //   console.log('>>>>', data)
+    // },
     getNextPageParam: (lastPage, pages, lastPageParam) => {
       if (!lastPage || lastPage.length < 9) {
         return undefined
