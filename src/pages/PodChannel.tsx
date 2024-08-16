@@ -2,21 +2,28 @@ import { getPodchannels } from '@/shared/api/generated'
 import { useQuery } from '@tanstack/react-query'
 import { ScrollRestoration, useParams } from 'react-router-dom'
 
+import Chat from '@/components/Chat'
 import PodChannelList from '@/components/PodChannelList'
 
-export default function Channel() {
-  const { channelID } = useParams()
+type Props = {}
+
+export default function PodChannel({}: Props) {
+  const { channelID, podchannelID } = useParams()
 
   const { data: podchannels } = useQuery({
     queryKey: ['podchannels', channelID],
     queryFn: () => getPodchannels({ channelId: Number(channelID) }),
     enabled: !!channelID,
   })
-
   return (
     <section className="flex h-[100vh] flex-grow pl-20">
+      <ScrollRestoration
+        getKey={(location, matches) => {
+          return location.pathname
+        }}
+      />
       <PodChannelList data={podchannels} />
-      <div>WELCOME</div>
+      <Chat />
     </section>
   )
 }

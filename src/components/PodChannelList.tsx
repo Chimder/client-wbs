@@ -1,8 +1,13 @@
-// PodChannelList.tsx
 import { useContext, useEffect } from 'react'
 import { QueriesPodchannel } from '@/shared/api/generated'
-import { useNavigate, useParams } from 'react-router-dom'
+import {
+  Link,
+  ScrollRestoration,
+  useNavigate,
+  useParams,
+} from 'react-router-dom'
 
+import { Button } from './ui/button'
 import { WebSocketContext } from './WebSocketProvider'
 
 interface Props {
@@ -13,8 +18,11 @@ export default function PodChannelList({ data }: Props) {
   const navigate = useNavigate()
   const { channelID } = useParams()
   const { socket, sendJoinUser } = useContext(WebSocketContext)
+  if (!channelID) {
+    navigate('/')
+    return null
+  }
 
-  console.log('PARAM', channelID)
   useEffect(() => {
     if (socket && channelID) {
       sendJoinUser(channelID)
@@ -24,19 +32,19 @@ export default function PodChannelList({ data }: Props) {
   return (
     <div className="h-full w-64 overflow-y-auto bg-gray-700 p-4">
       <div className="flex flex-col gap-2">
-        {data?.map(podchannel => (
-          <button
-            key={podchannel.id}
-            onClick={() => navigate(`/channel/${channelID}/${podchannel.id}`)}
-            className={`rounded px-4 py-2 ${
-              // podchannelID === String(podchannel.id)
-              'bg-green-500 text-white'
-              // : 'bg-gray-200'
-            }`}
-          >
-            {podchannel.name}
-          </button>
-        ))}
+        {data &&
+          data.map(podchannel => (
+            <Link
+              to={`/channel/${channelID}/${podchannel.id}`}
+            >
+              <Button
+                key={podchannel.id}
+                className={`rounded w-full px-4 py-2 ${'bg-green-500 text-white'}`}
+              >
+                {podchannel.name}
+              </Button>
+            </Link>
+          ))}
       </div>
     </div>
   )
