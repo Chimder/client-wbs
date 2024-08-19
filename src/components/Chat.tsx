@@ -1,13 +1,15 @@
 import React, { useContext, useEffect, useRef, useState } from 'react'
 import { getPodchannelMessage } from '@/shared/api/generated'
 import { useInfiniteQuery } from '@tanstack/react-query'
-import { useInView } from 'react-intersection-observer'
+// import { useInView } from 'react-intersection-observer'
 import { useParams } from 'react-router-dom'
+import { v4 as uuidv4 } from 'uuid'
 
 import { WebSocketContext } from '@/components/WebSocketProvider'
 
 import { Skeleton } from './ui/skeleton'
 import { Textarea } from './ui/textarea'
+import { Button } from './ui/button'
 
 const Chat: React.FC = () => {
   const {
@@ -23,7 +25,6 @@ const Chat: React.FC = () => {
   const initialLoadRef = useRef(true)
 
   const key = `${channelID}-${podchannelID}`
-  const currentLiveMessages = liveMessages[key] || []
 
   const scrollToBottom = () => {
     if (chatContainerRef.current) {
@@ -34,7 +35,7 @@ const Chat: React.FC = () => {
   const fetchMessages = async ({ pageParam = 1 }) => {
     const response = await getPodchannelMessage({
       podchannel_id: Number(podchannelID),
-      limit: 10,
+      limit: 20,
       page: pageParam,
     })
     return response
@@ -50,7 +51,7 @@ const Chat: React.FC = () => {
     queryKey: ['messages', podchannelID],
     queryFn: fetchMessages,
     getNextPageParam: (lastPage, pages, lastPageParam) => {
-      if (!lastPage || lastPage.length < 9) {
+      if (!lastPage || lastPage.length < 19) {
         return undefined
       }
       return lastPageParam + 1
@@ -60,6 +61,20 @@ const Chat: React.FC = () => {
     refetchOnWindowFocus: false,
     staleTime: 800000,
     retry: 0,
+    select: data => {
+      const allMessages = data.pages.flat()
+      const liveMessagesForCurrentChannel = liveMessages[key] || []
+
+      const mergedMessages = [
+        ...allMessages,
+        ...liveMessagesForCurrentChannel,
+      ].sort(
+        (a, b) =>
+          new Date(a?.created_at!).getTime() -
+          new Date(b?.created_at!).getTime(),
+      )
+      return mergedMessages
+    },
   })
 
   useEffect(() => {
@@ -73,17 +88,11 @@ const Chat: React.FC = () => {
     }
   }, [messages])
 
-  const { ref, inView } = useInView({ triggerOnce: false, skip: !hasNextPage })
-  useEffect(() => {
-    if (inView && hasNextPage) {
-      fetchNextPage()
-    }
-  }, [inView, hasNextPage])
-
   const sendMessage = () => {
     if (socket && inputValue.trim() !== '' && podchannelID) {
       const message = JSON.stringify({
         event: 'message',
+        message_id: uuidv4(),
         message: inputValue,
         created_at: new Date().toISOString(),
         channel_id: Number(channelID),
@@ -110,8 +119,6 @@ const Chat: React.FC = () => {
     e.target.style.height = `${e.target.scrollHeight}px`
   }
 
-  const reversedMessages = messages ? messages.pages.flat().reverse() : []
-
   return (
     <div className="flex flex-grow flex-col justify-between overflow-y-hidden">
       {isFetching && !isFetchingNextPage ? (
@@ -124,15 +131,26 @@ const Chat: React.FC = () => {
           ))}
         </div>
       ) : (
-        <ul
-          ref={chatContainerRef}
-          className="h-[100vh] space-y-4 overflow-y-auto px-4 pb-4"
-        >
-          {reversedMessages.length > 0 ? (
-            reversedMessages.map((message, i) => (
+        <>
+          <ul
+            ref={chatContainerRef}
+            className="h-[100vh] space-y-4 overflow-y-auto px-4 pb-4"
+          >
+            {hasNextPage && (
+              <div className="my-4 pt-1 flex justify-center">
+                <Button
+                  onClick={() => fetchNextPage()}
+                  className="rounded bg-blue-500 px-4 py-2 text-white"
+                  disabled={isFetchingNextPage}
+                >
+                  {isFetchingNextPage ? 'load...' : 'load old'}
+                </Button>
+              </div>
+            )}
+
+            {messages?.map((message, i) => (
               <li
-                ref={ref}
-                key={message?.id}
+                key={`${message?.id}${message?.created_at}`}
                 className="mb-2 flex items-center justify-between bg-slate-600 p-4"
               >
                 <p>{message?.message}</p>
@@ -143,28 +161,11 @@ const Chat: React.FC = () => {
                   })}
                 </span>
               </li>
-            ))
-          ) : (
-            <div>No messages yet.</div>
-          )}
-          {currentLiveMessages?.map((message, index) => (
-            <div
-              key={`live-${index}`}
-              className="mb-2 flex items-center justify-between p-4"
-            >
-              <p>{message?.message}</p>
-              <span className="self-start text-xs">
-                {new Date(message?.created_at).toLocaleTimeString([], {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })}
-              </span>
-            </div>
-          ))}
-        </ul>
+            ))}
+          </ul>
+        </>
       )}
-
-      <div className="relative bottom-0 mx-8 ml-4 h-11 pb-20">
+      <div className=" relative bottom-0 mb-20 pb-[8vh] pt-1 mx-8 ml-4 h-11 ">
         <Textarea
           value={inputValue}
           onChange={handleInputChange}

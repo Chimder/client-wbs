@@ -11,6 +11,10 @@ export default function Channel() {
     queryKey: ['podchannels', channelID],
     queryFn: () => getPodchannels({ channelId: Number(channelID) }),
     enabled: !!channelID,
+    staleTime: 80000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    retry: 0,
   })
 
   return (

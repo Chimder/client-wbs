@@ -16,7 +16,7 @@ interface Props {
 
 export default function PodChannelList({ data }: Props) {
   const navigate = useNavigate()
-  const { channelID } = useParams()
+  const { channelID, podchannelID } = useParams()
   const { socket, sendJoinUser } = useContext(WebSocketContext)
   if (!channelID) {
     navigate('/')
@@ -35,11 +35,11 @@ export default function PodChannelList({ data }: Props) {
         {data &&
           data.map(podchannel => (
             <Link
+              key={podchannel.id}
               to={`/channel/${channelID}/${podchannel.id}`}
             >
               <Button
-                key={podchannel.id}
-                className={`rounded w-full px-4 py-2 ${'bg-green-500 text-white'}`}
+                className={`w-full rounded px-4 py-2 ${podchannelID == podchannel.id ? 'bg-blue-500' : 'bg-white'}`}
               >
                 {podchannel.name}
               </Button>

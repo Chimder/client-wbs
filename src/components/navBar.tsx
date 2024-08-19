@@ -23,7 +23,7 @@ export default function NavBar() {
         ) : (
           channels &&
           channels?.map(channel => (
-            <Link to={`/channel/${channel.id}`}>
+            <Link key={channel.id} to={`/channel/${channel.id}`}>
               <li className="" key={channel?.id}>
                 <Button
                   className={`rounded-full px-4 py-2 ${channelID == channel.id ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}

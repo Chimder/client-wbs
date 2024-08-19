@@ -2,6 +2,7 @@ import React, { createContext, useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 
 export type WebsocketMessage = {
+  id:string
   event: string
   author_id: string
   channel_id: string
@@ -36,6 +37,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({
     [key: string]: WebsocketMessage[]
   }>({})
 
+  console.log('LIve', liveMessages)
   useEffect(() => {
     const key = `${channelID}-${podchannelID}`
     if (!liveMessages[key]) {
